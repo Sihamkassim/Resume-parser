@@ -313,6 +313,9 @@ function displayResult(data) {
     // Store parsed data in application state
     parsedResumeData = data;
     
+    // Save to localStorage for chatbot
+    localStorage.setItem('parsedResume', JSON.stringify(data));
+    
     // Display JSON
     jsonOutput.textContent = JSON.stringify(data, null, 2);
     
@@ -326,6 +329,9 @@ function displayResult(data) {
     
     showResultState();
     copyBtn.disabled = false;
+    
+    // Show chatbot notification
+    showChatbotNotification();
 }
 
 // Populate form with parsed resume data
@@ -485,6 +491,38 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Show chatbot notification
+function showChatbotNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'fixed bottom-4 right-4 bg-purple-600 text-white px-6 py-4 rounded-lg shadow-2xl z-50 max-w-sm';
+    notification.innerHTML = `
+        <div class="flex items-start gap-3">
+            <i class="fas fa-robot text-2xl"></i>
+            <div class="flex-1">
+                <h4 class="font-semibold mb-1">Resume Parsed Successfully!</h4>
+                <p class="text-sm text-purple-100 mb-3">Ready to find jobs that match your skills?</p>
+                <a href="chatbot.html" class="inline-block bg-white text-purple-600 px-4 py-2 rounded font-semibold text-sm hover:bg-purple-50 transition">
+                    <i class="fas fa-comment-dots mr-2"></i>Chat with Job Assistant
+                </a>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="text-purple-200 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 10 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.5s';
+            setTimeout(() => notification.remove(), 500);
+        }
+    }, 10000);
 }
 
 // State management

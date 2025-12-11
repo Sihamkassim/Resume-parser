@@ -2,10 +2,33 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
+const dotenv = require('dotenv');
 const ResumeParser = require('./parser');
+const JobHuntingAgent = require('./jobAgent');
+
+// Load environment variables
+dotenv.config();
+
+// Validate API keys
+if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
+  console.error('\n❌ ERROR: GEMINI_API_KEY is missing or invalid!');
+  console.error('📝 Please update your .env file with a valid Gemini API key.');
+  console.error('🔑 Get your key from: https://aistudio.google.com/app/apikey\n');
+  process.exit(1);
+}
+
+if (!process.env.TAVILY_API_KEY || process.env.TAVILY_API_KEY === 'your_tavily_api_key_here') {
+  console.warn('\n⚠️  WARNING: TAVILY_API_KEY is missing. Job search will use mock data.\n');
+}
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+
+// Initialize job hunting agent
+const jobAgent = new JobHuntingAgent(
+  process.env.GEMINI_API_KEY,
+  process.env.TAVILY_API_KEY
+);
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -143,6 +166,98 @@ app.post('/parse-file', upload.single('file'), async (req, res) => {
       success: false,
       error: 'Failed to parse file',
       message: error.message
+    });
+  }
+});
+
+// Set user profile for chatbot
+app.post('/set-profile', (req, res) => {
+  try {
+    const resumeData = req.body;
+    
+    if (!resumeData || !resumeData.name) {
+      return res.status(400).json({
+        error: 'Invalid profile data',
+        message: 'Please provide valid resume data'
+      });
+    }
+
+    jobAgent.setUserProfile(resumeData);
+    jobAgent.clearHistory(); // Clear previous conversation
+
+    res.json({
+      success: true,
+      message: 'Profile set successfully. You can now chat with the job assistant!'
+    });
+
+  } catch (error) {
+    console.error('Error setting profile:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to set profile',
+      message: error.message
+    });
+  }
+});
+
+// Chat with job hunting assistant
+app.post('/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({
+        error: 'Empty message',
+        message: 'Please provide a message'
+      });
+    }
+
+    const response = await jobAgent.chat(message);
+
+    res.json({
+      success: true,
+      ...response,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Chat failed',
+      message: error.message
+    });
+  }
+});
+
+// Get conversation history
+app.get('/chat-history', (req, res) => {
+  try {
+    const history = jobAgent.getHistory();
+    res.json({
+      success: true,
+      history
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get history'
+    });
+  }
+});
+
+// Clear conversation
+app.post('/clear-chat', (req, res) => {
+  try {
+    jobAgent.clearHistory();
+    res.json({
+      success: true,
+      message: 'Conversation cleared'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to clear conversation'
     });
   }
 });

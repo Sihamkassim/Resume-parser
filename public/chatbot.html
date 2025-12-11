@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Hunting Assistant - AI Powered</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <div class="flex items-center justify-center mb-4">
+                <i class="fas fa-robot text-5xl text-purple-600 mr-3"></i>
+                <h1 class="text-4xl font-bold text-gray-800">Job Hunting Assistant</h1>
+            </div>
+            <p class="text-gray-600 text-lg">AI-powered job search based on your resume</p>
+            <div class="flex gap-4 justify-center mt-4">
+                <a href="index.html" class="text-sm bg-white hover:bg-gray-100 px-4 py-2 rounded-lg shadow transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Resume Parser
+                </a>
+            </div>
+        </header>
+
+        <!-- Profile Status -->
+        <div id="profileStatus" class="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 mb-6 max-w-3xl mx-auto">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-yellow-600 text-2xl mr-3"></i>
+                <div>
+                    <h3 class="font-semibold text-yellow-800">No Resume Profile Set</h3>
+                    <p class="text-sm text-yellow-700">Please parse your resume first to enable personalized job search.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Interface -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Sidebar - User Profile -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-user-circle text-purple-600 mr-2"></i>
+                        Your Profile
+                    </h2>
+                    
+                    <div id="profileInfo" class="space-y-4">
+                        <div class="text-center text-gray-400 py-8">
+                            <i class="fas fa-user-slash text-4xl mb-2"></i>
+                            <p class="text-sm">No profile loaded</p>
+                        </div>
+                    </div>
+
+                    <div id="profileLoaded" class="hidden">
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <label class="font-semibold text-gray-700">Name:</label>
+                                <p id="profileName" class="text-gray-600">-</p>
+                            </div>
+                            <div>
+                                <label class="font-semibold text-gray-700">Email:</label>
+                                <p id="profileEmail" class="text-gray-600">-</p>
+                            </div>
+                            <div>
+                                <label class="font-semibold text-gray-700">Skills:</label>
+                                <div id="profileSkills" class="flex flex-wrap gap-1 mt-1"></div>
+                            </div>
+                            <div>
+                                <label class="font-semibold text-gray-700">Experience:</label>
+                                <p id="profileExp" class="text-gray-600">-</p>
+                            </div>
+                        </div>
+
+                        <button id="loadFromParserBtn" class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-sync mr-2"></i>Reload Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg flex flex-col" style="height: calc(100vh - 250px);">
+                    <!-- Chat Header -->
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4 rounded-t-xl">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-robot text-2xl mr-3"></i>
+                                <div>
+                                    <h3 class="font-semibold">AI Job Assistant</h3>
+                                    <p class="text-xs text-purple-100">Powered by GPT & Tavily Search</p>
+                                </div>
+                            </div>
+                            <button id="clearChatBtn" class="bg-purple-700 hover:bg-purple-800 px-3 py-1 rounded text-sm transition">
+                                <i class="fas fa-trash mr-1"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+                        <!-- Welcome message -->
+                        <div class="flex items-start">
+                            <div class="bg-purple-100 rounded-full p-2 mr-3">
+                                <i class="fas fa-robot text-purple-600"></i>
+                            </div>
+                            <div class="bg-white rounded-lg px-4 py-3 shadow-sm max-w-md">
+                                <p class="text-sm text-gray-800">👋 Hi! I'm your AI job hunting assistant. Upload your resume in the Resume Parser, then I can help you find jobs that match your skills and experience!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-t border-gray-200 p-4 bg-white rounded-b-xl">
+                        <div class="flex gap-2">
+                            <input 
+                                type="text" 
+                                id="chatInput" 
+                                placeholder="Ask me to find jobs matching your skills..."
+                                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                disabled
+                            />
+                            <button id="sendBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button class="quick-prompt text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition">
+                                Find frontend jobs
+                            </button>
+                            <button class="quick-prompt text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition">
+                                Jobs matching my skills
+                            </button>
+                            <button class="quick-prompt text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition">
+                                Remote opportunities
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="chatbot.js"></script>
+</body>
+</html>
